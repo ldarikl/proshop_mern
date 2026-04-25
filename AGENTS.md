@@ -1,61 +1,147 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Structure & Module Organization
+## Overview
 
-This is a MERN eCommerce app with a Node/Express API and a Create React App frontend.
+MERN eCommerce application with a Node.js + Express API and a Create React App frontend.
 
-- `backend/server.js` starts the API, connects middleware, serves uploads, and serves the frontend build in production.
-- `backend/routes`, `backend/controllers`, `backend/models`, and `backend/middleware` hold API endpoints, business logic, Mongoose schemas, and request guards.
-- `backend/data` and `backend/seeder.js` provide sample seed data and database import/destroy scripts.
-- `frontend/src` contains React screens, reusable components, Redux actions/reducers/constants, and global styles.
-- `frontend/public` contains static CRA assets. `uploads` stores uploaded files and example media.
+Core flows:
+- Product browsing → React → API → MongoDB
+- Authentication via JWT
+- Cart & orders managed via Redux state + backend persistence
+- Admin flows for product/user/order management
 
-## Build, Test, and Development Commands
+---
 
-- `npm install` installs backend dependencies from the repository root.
-- `npm install --prefix frontend` installs frontend dependencies.
-- `npm run dev` runs backend and frontend together with `concurrently`.
-- `npm run server` runs only the API with `nodemon`.
-- `npm run client` runs only the CRA dev server via the frontend package.
-- `npm run data:import` seeds MongoDB with sample users/products.
-- `npm run data:destroy` removes seeded data.
-- `npm run build --prefix frontend` creates the production frontend build.
-- `npm test --prefix frontend` runs CRA/Jest tests in watch mode.
+## Tech Stack
 
+- Backend: Node.js, Express, MongoDB, Mongoose
+- Frontend: React (CRA), Redux, React Router
+- Auth: JWT-based authentication
+- Dev tools: nodemon, concurrently
+- Payments: PayPal (sandbox in development)
 
-## Coding Style & Naming Conventions
+---
 
-Use modern JavaScript ES modules throughout the backend; include `.js` extensions on local backend imports. Existing code uses 2-space indentation, no semicolons, single quotes, and concise arrow functions. Keep React components in PascalCase files such as `ProductScreen.js`, Redux files in camelCase groups such as `productActions.js`, and constants in uppercase names exported from `*Constants.js`.
+## Architecture
 
-## Testing Guidelines
+- Backend entry: `backend/server.js`
+- Frontend entry: `frontend/src/index.js`
 
-Frontend testing is configured through `react-scripts` with Jest and React Testing Library. Add tests near the code they cover using CRA-supported names like `Component.test.js` or `feature.test.js`. There is no backend test runner configured yet, so document any manual API checks in the PR when changing controllers, routes, auth, or database behavior.
+Backend structure:
+- Routes: `backend/routes/*`
+- Controllers: `backend/controllers/*`
+- Models: `backend/models/*`
+- Middleware: `backend/middleware/*`
 
-# Local Development Gotchas
+Frontend structure:
+- Screens: `frontend/src/screens/*`
+- Components: `frontend/src/components/*`
+- Redux: `frontend/src/actions`, `reducers`, `constants`
 
-## Commit Conventions
-Every commit message must be prefixed with `COURSE:`:
+Data flow:
+- React → Redux actions → API calls
+- API → Controllers → Mongoose models → MongoDB
+- Auth via middleware (`authMiddleware.js`) using JWT
 
-```
-COURSE: Fix cart calculation for discounted items
-COURSE: Add product review validation
-```
+---
 
-Example of a good commit:
-```
-COURSE: Fix dev environment setup for modern Node.js
+## Commands
 
-  - Add NODE_OPTIONS=--openssl-legacy-provider for webpack compatibility with Node v24
-  - Change dev server port from 5000 to 5001 to avoid macOS AirPlay conflict
-  - Add .idea to .gitignore
-  - Add Docker script for local MongoDB
-  - Update package-lock files
-```
+Install:
+- `npm install`
+- `npm install --prefix frontend`
 
-## Database Seeding:
-After modifying Mongoose schemas, update the sample data in `backend/data/` and run `npm run data:import` to ensure environment consistency.
+Run:
+- `npm run dev` — full stack
+- `npm run server` — backend only
+- `npm run client` — frontend only
 
-## Code Quality
-- Clear variable/function naming
-- DRY — no duplicated logic
-- SOLID Principles
+Database:
+- `npm run data:import` — seed DB
+- `npm run data:destroy` — clear DB
+
+Build:
+- `npm run build --prefix frontend`
+
+Tests:
+- `npm test --prefix frontend`
+
+---
+
+## Conventions
+
+- 2-space indentation, no semicolons, single quotes
+- ES modules in backend (explicit `.js` imports)
+- React components: PascalCase (`ProductScreen.js`)
+- Redux files: camelCase (`productActions.js`)
+- Constants: uppercase (`PRODUCT_LIST_REQUEST`)
+
+Code structure:
+- Business logic must be in controllers, not routes
+- API calls must go through Redux actions
+- Redux is the single source of truth for app state
+
+---
+
+## Local Development Gotchas
+
+- Mongoose model changes require full server restart
+- Changing `.env` requires restarting both frontend and backend
+- Frontend depends on backend API (proxy config must match)
+- Port 5000 may conflict on macOS (AirPlay)
+- Seed script must be run manually after DB reset
+- MongoDB must be running before starting backend
+
+---
+
+## Deployment Quirks
+
+- Frontend must be built and served via Express in production
+- Environment variables must be defined before server start
+- MongoDB Atlas requires IP whitelist configuration
+- PayPal requires sandbox credentials in development
+- No runtime fallback for missing env variables
+
+---
+
+## What NOT to do
+
+- Do not modify Mongoose schemas without restarting the server
+- Do not call API directly from React components
+- Do not introduce new global state outside Redux
+- Do not mix business logic into route handlers
+- Do not change API response structure without updating frontend
+- Do not introduce new dependencies without clear need
+
+---
+
+## Unwritten Rules
+
+### Team Conventions
+
+- Commit messages must be prefixed with `COURSE:`
+- Keep commits small and focused
+- Separate backend and frontend changes logically
+- Document manual testing steps in PRs for backend changes
+
+### Local Gotchas
+
+- After schema changes, update `backend/data/` and re-seed DB
+- Backend must be started before frontend for correct API proxying
+- JWT token must be included in Authorization header for protected routes
+
+### Deployment
+
+- Ensure correct MongoDB URI and credentials before deployment
+- Verify PayPal config before testing checkout flow
+
+---
+
+## AI Usage Rules
+
+- Always analyze existing code before generating new code
+- Prefer extending existing patterns over introducing new ones
+- Avoid adding new libraries unless necessary
+- Keep changes minimal and focused
+- Do not refactor multiple layers (backend + frontend) in one change
+- Preserve existing API contracts unless explicitly changing both sides
