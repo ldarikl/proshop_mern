@@ -28,6 +28,12 @@ Please do not post issues here that are related to your own code when taking the
 
 ## Usage
 
+### Prerequisites
+
+- Node.js v14.6+ is required because the backend uses ES modules. Node 14 or 16 is recommended for the least friction with this older CRA setup.
+- MongoDB must be running before starting the API. Use a local MongoDB instance or a MongoDB Atlas connection string.
+- A PayPal sandbox client ID is needed only for testing checkout payments.
+
 ### ES Modules in Node
 
 We use ECMAScript Modules in the backend in this project. Be sure to have at least Node v14.6+ or you will need to add the "--experimental-modules" flag.
@@ -38,55 +44,101 @@ You can also install and setup Babel if you would like
 
 ### Env Variables
 
-Create a .env file in then root and add the following
+Create a `.env` file in the project root and add the following values:
 
 ```
-NODE_ENV = development
-PORT = 5005
-MONGO_URI = your mongodb uri
-JWT_SECRET = 'abc123'
-PAYPAL_CLIENT_ID = your paypal client id
+NODE_ENV=development
+PORT=5005
+MONGO_URI=your mongodb uri
+JWT_SECRET=abc123
+PAYPAL_CLIENT_ID=your paypal sandbox client id
 ```
+
+The frontend proxy is configured in `frontend/package.json` to call `http://127.0.0.1:5005`, so keep `PORT=5005` unless you also update that proxy value.
+
+The frontend also has its own `frontend/.env` for CRA runtime options:
+
+```
+HOST=127.0.0.1
+NODE_OPTIONS=--openssl-legacy-provider
+```
+
+The `NODE_OPTIONS` value helps older `react-scripts` work on newer Node versions during development.
 
 ### Install Dependencies (frontend & backend)
 
 ```
 npm install
-cd frontend
-npm install
+npm install --prefix frontend
+```
+
+Use `npm ci` and `npm ci --prefix frontend` instead when you want a clean install from the committed lockfiles.
+
+### Seed Database
+
+After MongoDB is available and the root `.env` file is configured, import the sample users and products:
+
+```
+npm run data:import
+```
+
+To clear seeded data:
+
+```
+npm run data:destroy
 ```
 
 ### Run
 
 ```
-# Run frontend (:3000) & backend (:5005)
+# Run frontend (http://127.0.0.1:3000) & backend (http://127.0.0.1:5005)
 npm run dev
 
 # Run backend only
 npm run server
+
+# Run frontend only
+npm run client
 ```
+
+When running the frontend only, start the backend first so the CRA proxy can reach the API.
+
+### First Run Checklist
+
+1. Clone the repository.
+2. Install root dependencies: `npm install`.
+3. Install frontend dependencies: `npm install --prefix frontend`.
+4. Create the root `.env` file with `NODE_ENV`, `PORT`, `MONGO_URI`, `JWT_SECRET`, and `PAYPAL_CLIENT_ID`.
+5. Start MongoDB or verify that your Atlas URI is reachable.
+6. Seed the database with `npm run data:import`.
+7. Start the app with `npm run dev`.
+8. Open `http://127.0.0.1:3000`.
 
 ## Build & Deploy
 
 ```
 # Create frontend prod build
-cd frontend
-npm run build
+npm run build --prefix frontend
 ```
 
-There is a Heroku postbuild script, so if you push to Heroku, no need to build manually for deployment to Heroku
-
-### Seed Database
-
-You can use the following commands to seed the database with some sample users and products as well as destroy all data
+If the build fails on a newer Node version with an OpenSSL error, run:
 
 ```
-# Import data
-npm run data:import
-
-# Destroy data
-npm run data:destroy
+NODE_OPTIONS=--openssl-legacy-provider npm run build --prefix frontend
 ```
+
+The production server serves `frontend/build` when `NODE_ENV=production`.
+
+To run the production build locally:
+
+```
+npm run build --prefix frontend
+NODE_ENV=production npm start
+```
+
+Then open the backend URL, for example `http://127.0.0.1:5005` when `PORT=5005`.
+
+There is a Heroku postbuild script, so if you push to Heroku, no need to build manually for deployment to Heroku.
 
 ```
 Sample User Logins
