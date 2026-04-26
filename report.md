@@ -1,5 +1,9 @@
 # Report
 
+## Local Run Confirmation
+
+Запустил проект локально через Docker MongoDB (`mongo:7` на `27017`) и `npm run dev`: backend ответил на `http://127.0.0.1:5005` строкой `API is running....`, `http://127.0.0.1:5005/api/products` вернул seeded products, frontend ответил на `http://127.0.0.1:3000`.
+
 ## Project Overview
 
 MERN eCommerce application with Node.js/Express backend and React frontend.
