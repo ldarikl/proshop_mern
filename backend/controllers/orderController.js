@@ -1,5 +1,8 @@
 import asyncHandler from 'express-async-handler'
+import mongoose from 'mongoose'
 import Order from '../models/orderModel.js'
+import Product from '../models/productModel.js'
+import { calcPrices } from '../utils/calcPrices.js'
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -9,26 +12,49 @@ const addOrderItems = asyncHandler(async (req, res) => {
     orderItems,
     shippingAddress,
     paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
   } = req.body
 
-  if (orderItems && orderItems.length === 0) {
+  if (!Array.isArray(orderItems) || orderItems.length === 0) {
     res.status(400)
     throw new Error('No order items')
-    return
   } else {
+    const orderItemsFromDb = await Promise.all(
+      orderItems.map(async (item) => {
+        const qty = Number(item.qty)
+
+        if (
+          !mongoose.Types.ObjectId.isValid(item.product) ||
+          !Number.isInteger(qty) ||
+          qty < 1
+        ) {
+          res.status(400)
+          throw new Error('Invalid order item')
+        }
+
+        const product = await Product.findById(item.product)
+
+        if (!product) {
+          res.status(404)
+          throw new Error('Product not found')
+        }
+
+        return {
+          name: product.name,
+          qty,
+          image: product.image,
+          price: product.price,
+          product: product._id,
+        }
+      })
+    )
+    const prices = calcPrices(orderItemsFromDb)
+
     const order = new Order({
-      orderItems,
+      orderItems: orderItemsFromDb,
       user: req.user._id,
       shippingAddress,
       paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
+      ...prices,
     })
 
     const createdOrder = await order.save()
