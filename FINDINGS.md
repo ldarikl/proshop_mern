@@ -1,0 +1,9 @@
+# FINDINGS — proshop_mern
+
+| # | Риск | Где | Что | Как фиксить | Статус |
+|---|------|-----|-----|-------------|--------|
+| 1 | 🔴 | backend/controllers/orderController.js::addOrderItems | Backend принимает цены и orderItems напрямую от клиента; проверка ловит только пустой массив, но не null, undefined, неверные qty/price/productId. | Валидировать orderItems, загружать товары из БД и пересчитывать все цены на сервере. | ✅ fixed in commit [507977f](https://github.com/ldarikl/proshop_mern/commit/507977f9545c1f71afce5937cb94b75d809bc083) |
+| 2 | 🔴 | backend/controllers/orderController.js::updateOrderToPaid | Заказ помечается оплаченным по телу запроса без проверки PayPal capture/status/amount/order ownership; malformed payer может уронить обработчик. | Проверять платеж через PayPal API, сверять сумму/валюту/orderId и безопасно валидировать paymentResult. | 🔴 not yet |
+| 3 | 🔴 | package.json::dependencies; frontend/package.json::dependencies | Зависимости сильно отстают: mongoose 5.10.6, express 4.17.1, jsonwebtoken 8.5.1, multer 1.4.2, react 16.13.1, axios 0.20.0, react-scripts 3.4.3. | Делать staged upgrade с lockfile refresh, миграционными заметками и регрессионным прогоном checkout/auth/admin flows. | 🔴 not yet |
+| 4 | 🟡 | backend/routes/uploadRoutes.js::router.post | Upload endpoint не защищен protect/admin, пишет в hardcoded uploads/, не задает limit на размер файла и падает при отсутствии req.file. | Закрыть endpoint авторизацией, добавить limits, явную проверку req.file и вынести upload path/config в настройки. | 🔴 not yet |
+| 5 | 🟡 | frontend/src/screens/OrderScreen.js::OrderScreen | Компонент больше 200 строк, смешивает расчет цен, загрузку PayPal SDK, авторизацию, delivery action и rendering; мутирует order.itemsPrice в render. | Разнести PayPal SDK, summary calculation и admin actions по hooks/helpers/components, убрать debug log и не мутировать Redux объект в render. | 🔴 not yet |
