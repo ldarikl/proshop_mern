@@ -1,43 +1,36 @@
-# Architecture — proshop_mern
+# Architecture
 
-ProShop MERN is a training eCommerce app with a Create React App frontend, a Node.js/Express API, MongoDB persistence through Mongoose, JWT authentication, file uploads, and PayPal sandbox checkout.
-
-## Runtime Flow
+## C4 Container
 
 ```mermaid
-flowchart LR
-  Browser[Browser / React CRA] --> Redux[Redux actions + reducers]
-  Redux --> API[Express API]
-  API --> Controllers[Controllers]
-  Controllers --> Models[Mongoose models]
-  Models --> Mongo[(MongoDB)]
-  API --> Uploads[uploads/ static files]
-  Browser --> PayPal[PayPal SDK]
-  API --> PayPalConfig[PAYPAL_CLIENT_ID config endpoint]
+C4Container
+  title ProShop MERN - Container Diagram
+
+  Person(customer, "User", "Uses the eCommerce web application")
+
+  System_Boundary(app, "ProShop MERN") {
+    Container(frontend, "Frontend SPA", "React, Redux, React Router, CRA", "Product browsing, cart, checkout, profile, and admin screens")
+    Container(backend, "Backend API", "Node.js, Express", "REST API for products, users, orders, uploads, JWT auth, and PayPal config")
+    ContainerDb(db, "MongoDB", "MongoDB via Mongoose", "Stores users, products, orders, and reviews")
+    Container(storage, "Uploads Directory", "Local filesystem", "Stores uploaded product images")
+  }
+
+  System_Ext(paypal, "PayPal JavaScript SDK", "External payment SDK loaded in the browser")
+
+  Rel(customer, frontend, "Uses", "HTTP")
+  Rel(frontend, backend, "Calls REST endpoints", "Axios / JSON")
+  Rel(frontend, paypal, "Loads SDK and submits payment", "HTTPS")
+  Rel(backend, db, "Reads and writes data", "Mongoose")
+  Rel(backend, storage, "Writes uploads and serves static files", "Multer / Express static")
+  Rel(backend, frontend, "Serves built SPA in production", "Express static")
 ```
 
-## Entry Points
+## Description
 
-- Backend: `backend/server.js`
-- Frontend: `frontend/src/index.js`
-- React routes: `frontend/src/App.js`
-- Redux store: `frontend/src/store.js`
-- Database connection: `backend/config/db.js`
+The frontend is a Create React App single-page application. Routing is handled in `frontend/src/App.js`, application state is managed through Redux in `frontend/src/store.js`, and API access goes through Redux actions using Axios.
 
-## Backend Shape
+The backend starts in `backend/server.js`. It exposes REST routes under `/api/products`, `/api/users`, `/api/orders`, and `/api/upload`; route handlers delegate to controllers and Mongoose models. Protected routes use JWT verification from `backend/middleware/authMiddleware.js`.
 
-- `backend/routes/*` defines HTTP routes and middleware chains.
-- `backend/controllers/*` contains request handling and business logic.
-- `backend/models/*` defines Mongoose schemas for users, products, and orders.
-- `backend/middleware/authMiddleware.js` verifies JWT tokens and admin access.
-- `backend/routes/uploadRoutes.js` handles product image upload paths.
+MongoDB is accessed through Mongoose using `MONGO_URI` in `backend/config/db.js`. Uploaded product images are written to the local `uploads/` directory and served from `/uploads`.
 
-## External Services
-
-- MongoDB via `MONGO_URI`.
-- PayPal sandbox/client SDK via `PAYPAL_CLIENT_ID`.
-- JWT signing via `JWT_SECRET`.
-
-## Local Runtime
-
-The backend normally runs on `PORT=5005` in this fork, and the frontend CRA dev server runs on `3000` with a proxy to `http://127.0.0.1:5005`.
+PayPal integration is implemented in the browser: `OrderScreen.js` requests `/api/config/paypal` for the client id, loads `https://www.paypal.com/sdk/js`, and sends the payment result back to the backend order API.
