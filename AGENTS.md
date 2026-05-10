@@ -145,3 +145,10 @@ Code structure:
 - Keep changes minimal and focused
 - Do not refactor multiple layers (backend + frontend) in one change
 - Preserve existing API contracts unless explicitly changing both sides
+
+## MCP Rules
+
+- For product docs, architecture, ADRs, runbooks, incidents, glossary, and feature explanations, use `search_project_docs` first.
+- Fall back to `rg`/file reads only if vector search is not enough or needs disambiguation.
+- For feature flag status checks or mutations, use Feature Flags MCP tools.
+- Never edit `backend/features.json` manually when the user asks to change flags.

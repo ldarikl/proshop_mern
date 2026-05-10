@@ -1,0 +1,9 @@
+[mcp_servers.feature_flags]
+command = "/Users/darik/Work/proshop_mern/.codex/mcp/launch_feature_flags.sh"
+args = []
+startup_timeout_sec = 120
+
+[mcp_servers.search_docs]
+command = "/Users/darik/Work/proshop_mern/.codex/mcp/launch_search_docs.sh"
+args = []
+startup_timeout_sec = 120
