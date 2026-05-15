@@ -4,6 +4,8 @@
 
 MERN eCommerce application with a Node.js + Express API and a Create React App frontend.
 
+## Design rules: see ./DESIGN.md
+
 Core flows:
 - Product browsing → React → API → MongoDB
 - Authentication via JWT
