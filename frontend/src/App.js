@@ -50,7 +50,7 @@ const App = () => {
           <Route path='/admin/product/:id/edit' component={ProductEditScreen} />
           <Route path='/admin/orderlist' component={OrderListScreen} />
           <Route
-            path='/admin/dashboard-features'
+            path='/admin/featuredashboard'
             component={DashboardFeaturesScreen}
           />
           <Route path='/search/:keyword' component={HomeScreen} exact />
