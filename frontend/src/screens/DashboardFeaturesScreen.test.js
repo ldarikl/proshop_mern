@@ -93,6 +93,14 @@ test('shows an error state when feature flags fail to load', () => {
   )
 })
 
+test('shows feature status summary counts', () => {
+  renderDashboard()
+
+  expect(screen.getByLabelText('Enabled features count')).toHaveTextContent('1')
+  expect(screen.getByLabelText('Testing features count')).toHaveTextContent('1')
+  expect(screen.getByLabelText('Disabled features count')).toHaveTextContent('1')
+})
+
 test('filters feature flags by search text and status', () => {
   renderDashboard()
 
